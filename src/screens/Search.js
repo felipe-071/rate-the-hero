@@ -26,14 +26,33 @@ async function searchHero(heroName){
 }
 
 export function Search() {
-
     const [heroes, setHeroes] = React.useState([]);
+    const[search, setSearch] = React.useState({
+        value: null,
+        doSearch: false,
+    })
 
     React.useEffect(() => {
         searchHero('captain').then((heroes) => {
             setHeroes(heroes);
         });
     }, [])
+
+    React.useEffect(() => {
+		if (search.doSearch) {
+			searchHero(search.value).then((heroes) => {
+				setHeroes(heroes);
+				setSearch((prevValue) => ({ ...prevValue, doSearch: false }));
+			});
+		}
+	}, [search]);
+
+    function handleUpdateSearchValue({ target: { value } }) {
+		setSearch((prevValue) => ({ ...prevValue, value }));
+	}
+	function handleSearch() {
+		setSearch((prevValue) => ({ ...prevValue, doSearch: true }));
+	}
 
     return (
         <>
@@ -46,10 +65,13 @@ export function Search() {
             >
 
                 <Box flexGrow="1">
-                    <SearchField placeholder="Digite um nome de herói ou heroína" />
+                    <SearchField 
+                        placeholder="Digite um nome de herói ou heroína" 
+                        onKeyUp={handleUpdateSearchValue}
+                    />
                 </Box>
                 <Box ml={Spaces.TWO}>
-                    <Button>Buscar</Button>
+                    <Button onClick={handleSearch}>Buscar</Button>
                 </Box>
             </Flex>
 
