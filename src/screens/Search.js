@@ -1,3 +1,4 @@
+import axios from 'axios'
 import styled from 'styled-components'
 import React from 'react'
 import { Alert } from '../common-components/Alert/Alert';
@@ -17,30 +18,22 @@ const HeroesGrid = styled(Box)`
     }
 `
 
+async function searchHero(heroName){
+    const { data } = await axios.get(`/search/${heroName}`, {
+        baseURL: `${process.env.REACT_APP_SUPER_HERO_API_BASE_URL}/${process.env.REACT_APP_SUPER_HERO_API_KEY}`
+    });
+    return data.results || []
+}
+
 export function Search() {
 
-    const initialState = [
-        {
-            secretIdentity: 'Terry McGinnis',
-            name: 'Batman',
-            picture: 'https://www.superherodb.com/pictures2/portraits/10/100/10441.jpg',
-            universe: 'DC Comics',
-        },
-        {
-            secretIdentity: 'Bruce Wayne',
-            name: 'Batman',
-            picture: 'https://www.superherodb.com/pictures2/portraits/10/100/639.jpg',
-            universe: 'DC Comics',
-        },
-        {
-            secretIdentity: 'Dick Grayson',
-            name: 'Batman II',
-            picture: 'https://www.superherodb.com/pictures2/portraits/10/100/1496.jpg',
-            universe: 'DC Comics',
-        },
-    ];
+    const [heroes, setHeroes] = React.useState([]);
 
-    const [heroes, setHeroes] = React.useState(initialState)
+    React.useEffect(() => {
+        searchHero('captain').then((heroes) => {
+            setHeroes(heroes);
+        });
+    }, [])
 
     return (
         <>
@@ -67,10 +60,12 @@ export function Search() {
 
             {heroes.map((hero) => (
                 <HeroCard
-                    secretIdentity={hero.secretIdentity}
+                    key={hero.id}
+                    id={hero.id}
+                    secretIdentity={hero.biography['full-name']}
                     name={hero.name}
-                    picture={hero.picture}
-                    universe={hero.universe}
+                    picture={hero.image.url}
+                    universe={hero.biography.publisher}
                 />
             ))}
 
