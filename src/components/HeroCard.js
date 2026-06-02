@@ -50,7 +50,7 @@ export function HeroCard({secretIdentity, name, picture, universe, id}){
                 <HeroAvatar src={picture}></HeroAvatar>
             </InformationGrid>
             <Box width="87px">
-                <ButtonLink>Ver mais </ButtonLink>
+                <ButtonLink to={`/detalhes/${id}`}>Ver mais </ButtonLink>
             </Box>
         </Card>
     )
