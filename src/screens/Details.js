@@ -1,15 +1,16 @@
 import styled from 'styled-components';
 import { Flex, Box } from 'reflexbox';
 import {
-	BorderRadiuses,
-	Colors,
-	Shadows,
-	Spaces,
+    BorderRadiuses,
+    Colors,
+    Shadows,
+    Spaces,
 } from '../shared/DesignTokens';
 import {
-	SelectField,
-	Option,
+    SelectField,
+    Option,
 } from '../common-components/SelectField/SelectField';
+import { Alert } from '../common-components/Alert/Alert';
 import { Button } from '../common-components/Button/Button';
 import { HeadingTwo } from '../common-components/HeadingTwo/HeadingTwo';
 import { Description } from '../common-components/Description/Description';
@@ -17,6 +18,10 @@ import { Card } from '../common-components/Card/Card';
 import { Caption } from '../common-components/Caption/Caption';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useHero } from '../hooks/useHero';
+import { useFormik } from 'formik';
+
+import * as yup from 'yup';
+
 
 const Container = styled.aside`
 	width: 727px;
@@ -38,133 +43,165 @@ const DetailsGrid = styled.section`
 	gap: ${Spaces.TWO};
 `;
 export function Details() {
-	const navigate = useNavigate();
-	const handleBack = () => {
-		navigate(-1);
-	};
+    const navigate = useNavigate();
+    const handleBack = () => {
+        navigate(-1);
+    };
 
     const { id } = useParams();
-    const { hero, isLoadingHero } = useHero(id)
+    const { hero, isLoadingHero, setHeroAvaliation, getHeroAvaliation } = useHero(id)
     console.log(hero)
 
-	return (
-		!isLoadingHero && (<Container>
-			<Flex mt={Spaces.FOUR} as="section">
-				<HeroAvatar src={hero.image.url} />
-				<Flex
-					flexDirection="column"
-					justifyContent="center"
-					height={194}
-					ml={Spaces.SEVEN}
-				>
-					<Flex>
-						<SelectField defaultValue="">
-							<Option value="" disabled>
-								Selecione a nota
-							</Option>
-							<Option>5</Option>
-							<Option>4</Option>
-							<Option>3</Option>
-							<Option>2</Option>
-							<Option>1</Option>
-						</SelectField>
-						<Box ml={Spaces.THREE}>
-							<Button>Atribuir</Button>
-						</Box>
-					</Flex>
-				</Flex>
-			</Flex>
-			<Box my={Spaces.ONE_HALF} as="section">
-				<HeadingTwo as="h1">{hero.name}</HeadingTwo>
-				<Description color={Colors.GRAY_700}>
-					{hero.biography['full-name']} - {hero.biography.publisher}
-				</Description>
-			</Box>
-			<DetailsGrid>
-				<Card>
-					<Box p={Spaces.TWO}>
-						<Box mb={Spaces.ONE}>
-							<Caption>Codinomes</Caption>
-						</Box>
-						<Description color={Colors.GRAY_700}>
-							{hero.biography.aliases.join(', ')}
-						</Description>
-					</Box>
-				</Card>
-				<Card>
-					<Box p={Spaces.TWO}>
-						<Box mb={Spaces.ONE}>
-							<Caption>Local de Nascimento</Caption>
-						</Box>
-						<Description color={Colors.GRAY_700}>
-							{hero.biography['place-of-birth']}
-						</Description>
-					</Box>
-				</Card>
-				<Card>
-					<Box p={Spaces.TWO}>
-						<Box mb={Spaces.ONE}>
-							<Caption>Primeira HQ</Caption>
-						</Box>
-						<Description color={Colors.GRAY_700}>
-							{hero.biography['first-appearance']}
-						</Description>
-					</Box>
-				</Card>
-				<Card>
-					<Box p={Spaces.TWO}>
-						<Box mb={Spaces.ONE}>
-							<Caption>Informações Biológicas</Caption>
-						</Box>
-						<Description color={Colors.GRAY_700}>
-							<strong>Genero: </strong> {hero.appearance.gender}
-							<br />
-							<strong>Raça: </strong> {hero.appearance.race}
-							<br />
-							<strong>Altura: </strong>{' '}
-							{hero.appearance.height[1]}
-							<br />
-							<strong>Peso: </strong> {hero.appearance.weight[1]}
-							<br />
-							<strong>Cor do olho: </strong>{' '}
-							{hero.appearance['eye-color']}
-							<br />
-							<strong>Cor do cabelo: </strong>{' '}
-							{hero.appearance['hair-color']}
-						</Description>
-					</Box>
-				</Card>
-				<Card>
-					<Box p={Spaces.TWO}>
-						<Box mb={Spaces.ONE}>
-							<Caption>Atributos</Caption>
-						</Box>
-						<Description color={Colors.GRAY_700}>
-							<strong>Força: </strong> {hero.powerstats.strength}
-							<br />
-							<strong>Inteligência: </strong>{' '}
-							{hero.powerstats.intelligence}
-							<br />
-							<strong>Velocidade: </strong>{' '}
-							{hero.powerstats.speed}
-							<br />
-							<strong>Resistência: </strong>{' '}
-							{hero.powerstats.durability}
-							<br />
-							<strong>Poder: </strong> {hero.powerstats.power}
-							<br />
-							<strong>Combate: </strong> {hero.powerstats.combat}
-						</Description>
-					</Box>
-				</Card>
-			</DetailsGrid>
-			<Flex width="100%" justifyContent="center" mt={Spaces.FIVE}>
-				<Box>
-					<Button ghost="true" onClick={handleBack}>
-						Voltar
-					</Button>
-				</Box>
-			</Flex>
-		</Container>)
-	);
+    const formik = useFormik({
+        initialValues: getHeroAvaliation(id) || { avaliation: '' },
+        validationSchema: yup.object().shape({
+            avaliation: yup.string().required(),
+        }),
+        onSubmit: (values) => {
+            const heroAvaliation = {id, avaliation: values.avaliation};
+            setHeroAvaliation(heroAvaliation);
+            alert('Nota atribuída com sucesso');
+            navigate('/')
+            console.log(values);
+        },
+    });
+
+
+
+    return (
+        !isLoadingHero && (
+            <Container>
+                <Flex mt={Spaces.FOUR} as="section">
+                    <HeroAvatar src={hero.image.url} />
+
+                    <Flex
+                        flexDirection="column"
+                        justifyContent="center"
+                        height={194}
+                        ml={Spaces.SEVEN}
+                    >
+                        <form onSubmit={formik.handleSubmit} noValidate>
+                            <Flex>
+                                <SelectField
+                                    name="avaliation"
+                                    onChange={formik.handleChange}
+                                    value={formik.values.avaliation}
+                                    required
+                                >
+                                    <Option value="" disabled>
+                                        Selecione a nota
+                                    </Option>
+                                    <Option>5</Option>
+                                    <Option>4</Option>
+                                    <Option>3</Option>
+                                    <Option>2</Option>
+                                    <Option>1</Option>
+                                </SelectField>
+                                <Box ml={Spaces.THREE}>
+                                    <Button type="submit">Atribuir</Button>
+                                </Box>
+                            </Flex>
+                            {formik.errors.avaliation && (
+                                <Box mt={Spaces.TWO}>
+                                    <Alert type="error">
+                                        Escolha uma nota para ser atribuída
+                                    </Alert>
+                                </Box>
+                            )}
+                        </form>
+                    </Flex>
+                </Flex>
+                <Box my={Spaces.ONE_HALF} as="section">
+                    <HeadingTwo as="h1">{hero.name}</HeadingTwo>
+                    <Description color={Colors.GRAY_700}>
+                        {hero.biography['full-name']} - {hero.biography.publisher}
+                    </Description>
+                </Box>
+                <DetailsGrid>
+                    <Card>
+                        <Box p={Spaces.TWO}>
+                            <Box mb={Spaces.ONE}>
+                                <Caption>Codinomes</Caption>
+                            </Box>
+                            <Description color={Colors.GRAY_700}>
+                                {hero.biography.aliases.join(', ')}
+                            </Description>
+                        </Box>
+                    </Card>
+                    <Card>
+                        <Box p={Spaces.TWO}>
+                            <Box mb={Spaces.ONE}>
+                                <Caption>Local de Nascimento</Caption>
+                            </Box>
+                            <Description color={Colors.GRAY_700}>
+                                {hero.biography['place-of-birth']}
+                            </Description>
+                        </Box>
+                    </Card>
+                    <Card>
+                        <Box p={Spaces.TWO}>
+                            <Box mb={Spaces.ONE}>
+                                <Caption>Primeira HQ</Caption>
+                            </Box>
+                            <Description color={Colors.GRAY_700}>
+                                {hero.biography['first-appearance']}
+                            </Description>
+                        </Box>
+                    </Card>
+                    <Card>
+                        <Box p={Spaces.TWO}>
+                            <Box mb={Spaces.ONE}>
+                                <Caption>Informações Biológicas</Caption>
+                            </Box>
+                            <Description color={Colors.GRAY_700}>
+                                <strong>Genero: </strong> {hero.appearance.gender}
+                                <br />
+                                <strong>Raça: </strong> {hero.appearance.race}
+                                <br />
+                                <strong>Altura: </strong>{' '}
+                                {hero.appearance.height[1]}
+                                <br />
+                                <strong>Peso: </strong> {hero.appearance.weight[1]}
+                                <br />
+                                <strong>Cor do olho: </strong>{' '}
+                                {hero.appearance['eye-color']}
+                                <br />
+                                <strong>Cor do cabelo: </strong>{' '}
+                                {hero.appearance['hair-color']}
+                            </Description>
+                        </Box>
+                    </Card>
+                    <Card>
+                        <Box p={Spaces.TWO}>
+                            <Box mb={Spaces.ONE}>
+                                <Caption>Atributos</Caption>
+                            </Box>
+                            <Description color={Colors.GRAY_700}>
+                                <strong>Força: </strong> {hero.powerstats.strength}
+                                <br />
+                                <strong>Inteligência: </strong>{' '}
+                                {hero.powerstats.intelligence}
+                                <br />
+                                <strong>Velocidade: </strong>{' '}
+                                {hero.powerstats.speed}
+                                <br />
+                                <strong>Resistência: </strong>{' '}
+                                {hero.powerstats.durability}
+                                <br />
+                                <strong>Poder: </strong> {hero.powerstats.power}
+                                <br />
+                                <strong>Combate: </strong> {hero.powerstats.combat}
+                            </Description>
+                        </Box>
+                    </Card>
+                </DetailsGrid>
+                <Flex width="100%" justifyContent="center" mt={Spaces.FIVE}>
+                    <Box>
+                        <Button ghost="true" onClick={handleBack}>
+                            Voltar
+                        </Button>
+                    </Box>
+                </Flex>
+            </Container>)
+    );
 }
